@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div>Hello</div>
+    <div class="box"></div>
+    <style>
+      .box {
+        width: 200px;
+        height: 200px;
+        background-color: bisque;
+        animation: ball;
+        animation-duration: 3s;
+        animation-iteration-count: infinite;
+        border-radius: 50%;
+      }
+      @keyframes ball {
+        0% {
+          transform: translate(100px, 150px);
+          background-color: blueviolet;
+        }
+        10% {
+          transform: translate(200px, -150px);
+          background-color: chocolate;
+        }
+        20% {
+          transform: translate(300px, 150px);
+          background-color: hotpink;
+        }
+        30% {
+          transform: translate(400px, -150px);
+          background-color: khaki;
+        }
+        40% {
+          transform: translate(500px, 150px);
+          background-color: royalblue;
+        }
+        50% {
+          transform: translate(600px, -150px);
+          background-color: teal;
+        }
+        60% {
+          transform: translate(700px, 150px);
+          background-color: whitesmoke;
+        }
+        70% {
+          transform: translate(800px, -150px);
+          background-color: aquamarine;
+        }
+        80% {
+          transform: translate(900px, 150px);
+          background-color: salmon;
+        }
+        90% {
+          transform: translate(1000px, -150px);
+          background-color: darkblue;
+        }
+        100% {
+          transform: translate(1100px, 150px);
+          background-color: cornflowerblue;
+        }
+      }
+    </style>
+  </body>
+</html>
