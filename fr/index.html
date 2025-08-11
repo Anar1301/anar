@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Tic Tac Toe — AI</title>
+    <style>
+      :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --accent: #22c55e;
+        --muted: #94a3b8;
+      }
+      body {
+        font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial;
+        background: linear-gradient(180deg, #071021, #0b1220);
+        color: #e6eef6;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+        padding: 20px;
+      }
+      .panel {
+        width: 380px;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 18px;
+        box-shadow: 0 8px 30px rgba(2, 6, 23, 0.6);
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0 0 12px;
+      }
+      .controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+      }
+      .controls > * {
+        background: #081123;
+        border: 1px solid rgba(255, 255, 255, 0.03);
+        padding: 8px 10px;
+        border-radius: 8px;
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .controls button.active {
+        background: var(--accent);
+        color: #022009;
+        border-color: rgba(0, 0, 0, 0.5);
+        font-weight: 600;
+      }
+      .status {
+        margin-bottom: 10px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .board {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .cell {
+        width: 100px;
+        height: 100px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+        font-size: 44px;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.08s;
+      }
+      .cell:active {
+        transform: scale(0.97);
+      }
+      .small {
+        width: 70px;
+        height: 70px;
+        font-size: 32px;
+      }
+      .footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+      }
+      .toggle {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+      }
+      .btn {
+        padding: 8px 10px;
+        border-radius: 8px;
+        background: #072033;
+        border: 1px solid rgba(255, 255, 255, 0.02);
+        color: var(--muted);
+        cursor: pointer;
+      }
+      .btn:hover {
+        filter: brightness(1.05);
+      }
+      .score {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .highlight {
+        background: linear-gradient(
+          90deg,
+          rgba(34, 197, 94, 0.12),
+          rgba(67, 56, 202, 0.06)
+        );
+      }
+    </style>
+  </head>
+  <body>
+    <div class="panel">
+      <h1>Tic Tac Toe — Play vs AI</h1>
+
+      <div class="controls">
+        <div
+          id="playerChoice"
+          style="display: flex; gap: 6px; align-items: center"
+        >
+          <div class="btn" id="chooseX">Play as X (first)</div>
+          <div class="btn" id="chooseO">Play as O (second)</div>
+        </div>
+
+        <div style="display: flex; gap: 6px; align-items: center">
+          <div class="btn" id="diffEasy">Easy</div>
+          <div class="btn" id="diffMed">Medium</div>
+          <div class="btn" id="diffHard">Hard</div>
+        </div>
+        <div
+          style="
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-left: auto;
+          "
+        >
+          <div class="btn" id="restartBtn">Restart</div>
+        </div>
+      </div>
+
+      <div class="status" id="status">
+        Choose player and difficulty to start.
+      </div>
+
+      <div class="board" id="board">
+        <!-- 9 cells -->
+        <div class="cell" data-i="0"></div>
+        <div class="cell" data-i="1"></div>
+        <div class="cell" data-i="2"></div>
+        <div class="cell" data-i="3"></div>
+        <div class="cell" data-i="4"></div>
+        <div class="cell" data-i="5"></div>
+        <div class="cell" data-i="6"></div>
+        <div class="cell" data-i="7"></div>
+        <div class="cell" data-i="8"></div>
+      </div>
+
+      <div class="footer">
+        <div class="toggle">
+          <label style="font-size: 13px; color: var(--muted)"
+            >Auto restart</label
+          ><input type="checkbox" id="autoRestart" style="margin-left: 6px" />
+        </div>
+        <div class="score" id="score">X: 0 — O: 0 — Draws: 0</div>
+      </div>
+    </div>
+
+    <script>
+      /*
+Tic Tac Toe with AI:
+- Board is array of 9 items: null / 'X' / 'O'
+- Player chooses X or O; X always goes first
+- Difficulty:
+  Easy: random legal move
+  Medium: 50% random, 50% minimax best
+  Hard: minimax optimal (never loses)
+- Minimax implemented for perfect play
+*/
+
+      const cells = Array.from(document.querySelectorAll(".cell"));
+      const statusEl = document.getElementById("status");
+      const scoreEl = document.getElementById("score");
+      const restartBtn = document.getElementById("restartBtn");
+      const autoCheckbox = document.getElementById("autoRestart");
+
+      let board = Array(9).fill(null);
+      let human = "X";
+      let ai = "O";
+      let currentTurn = "X";
+      let gameOver = false;
+      let difficulty = "hard"; // easy, medium, hard
+      let scores = { X: 0, O: 0, Draw: 0 };
+      let autoRestart = false;
+
+      // UI controls
+      document.getElementById("chooseX").addEventListener("click", () => {
+        setHuman("X");
+      });
+      document.getElementById("chooseO").addEventListener("click", () => {
+        setHuman("O");
+      });
+      document.getElementById("diffEasy").addEventListener("click", () => {
+        setDifficulty("easy");
+      });
+      document.getElementById("diffMed").addEventListener("click", () => {
+        setDifficulty("medium");
+      });
+      document.getElementById("diffHard").addEventListener("click", () => {
+        setDifficulty("hard");
+      });
+      restartBtn.addEventListener("click", resetBoard);
+      autoCheckbox.addEventListener("change", (e) => {
+        autoRestart = e.target.checked;
+      });
+
+      cells.forEach((c) => c.addEventListener("click", cellClicked));
+
+      function setHuman(letter) {
+        human = letter;
+        ai = letter === "X" ? "O" : "X";
+        highlightChoice();
+        resetBoard();
+      }
+      function setDifficulty(d) {
+        difficulty = d;
+        highlightChoice();
+        resetBoard();
+      }
+
+      function highlightChoice() {
+        // update buttons' active state
+        document
+          .getElementById("chooseX")
+          .classList.toggle("active", human === "X");
+        document
+          .getElementById("chooseO")
+          .classList.toggle("active", human === "O");
+        document
+          .getElementById("diffEasy")
+          .classList.toggle("active", difficulty === "easy");
+        document
+          .getElementById("diffMed")
+          .classList.toggle("active", difficulty === "medium");
+        document
+          .getElementById("diffHard")
+          .classList.toggle("active", difficulty === "hard");
+      }
+
+      function cellClicked(e) {
+        const i = +e.currentTarget.dataset.i;
+        if (gameOver || board[i] !== null) return;
+        if (currentTurn !== human) return; // only allow human moves on their turn
+        makeMove(i, human);
+        afterMove();
+      }
+
+      function makeMove(i, player) {
+        board[i] = player;
+        render();
+      }
+
+      function afterMove() {
+        const winner = checkWinner(board);
+        if (winner) {
+          handleGameOver(winner);
+          return;
+        }
+        if (board.every((v) => v !== null)) {
+          handleGameOver("Draw");
+          return;
+        }
+        // swap turn
+        currentTurn = currentTurn === "X" ? "O" : "X";
+        statusEl.textContent =
+          currentTurn === human ? "Your move" : "AI is thinking...";
+        if (currentTurn === ai && !gameOver) {
+          // small delay for feel
+          setTimeout(() => aiMove(), 220);
+        }
+      }
+
+      function aiMove() {
+        let move;
+        if (difficulty === "easy") {
+          move = randomMove(board);
+        } else if (difficulty === "medium") {
+          // 50% random, 50% best
+          if (Math.random() < 0.5) move = randomMove(board);
+          else move = bestMove(board, ai);
+        } else {
+          move = bestMove(board, ai);
+        }
+        if (move != null) {
+          makeMove(move, ai);
+          afterMove();
+        }
+      }
+
+      // Random legal move
+      function randomMove(b) {
+        const free = b
+          .map((v, i) => (v === null ? i : null))
+          .filter((v) => v !== null);
+        if (free.length === 0) return null;
+        return free[Math.floor(Math.random() * free.length)];
+      }
+
+      // Check winner or draw
+      function checkWinner(b) {
+        const lines = [
+          [0, 1, 2],
+          [3, 4, 5],
+          [6, 7, 8],
+          [0, 3, 6],
+          [1, 4, 7],
+          [2, 5, 8],
+          [0, 4, 8],
+          [2, 4, 6],
+        ];
+        for (const [a, b1, c] of lines) {
+          if (b[a] && b[a] === b[b1] && b[a] === b[c]) {
+            return b[a]; // 'X' or 'O'
+          }
+        }
+        if (b.every((x) => x !== null)) return "Draw";
+        return null;
+      }
+
+      function handleGameOver(result) {
+        gameOver = true;
+        if (result === "Draw") {
+          statusEl.textContent = "It's a draw.";
+          scores.Draw++;
+        } else {
+          statusEl.textContent = result === human ? "You win! 🎉" : "AI wins.";
+          scores[result]++;
+          // highlight winning cells
+          highlightWinningLine(result);
+        }
+        updateScoreUI();
+        // auto restart if enabled
+        if (autoRestart) {
+          setTimeout(() => resetBoard(), 1000);
+        }
+      }
+
+      // Highlight the winning line visually (simple)
+      function highlightWinningLine(player) {
+        const lines = [
+          [0, 1, 2],
+          [3, 4, 5],
+          [6, 7, 8],
+          [0, 3, 6],
+          [1, 4, 7],
+          [2, 5, 8],
+          [0, 4, 8],
+          [2, 4, 6],
+        ];
+        for (const [a, b1, c] of lines) {
+          if (board[a] && board[a] === board[b1] && board[a] === board[c]) {
+            cells[a].classList.add("highlight");
+            cells[b1].classList.add("highlight");
+            cells[c].classList.add("highlight");
+          }
+        }
+      }
+
+      function updateScoreUI() {
+        scoreEl.textContent = `X: ${scores.X}  —  O: ${scores.O}  —  Draws: ${scores.Draw}`;
+        // keep status text as-is
+      }
+
+      // Render board to UI
+      function render() {
+        cells.forEach((cell, i) => {
+          cell.textContent = board[i] || "";
+          cell.classList.remove("small");
+          cell.style.cursor =
+            gameOver || currentTurn !== human || board[i] !== null
+              ? "default"
+              : "pointer";
+        });
+      }
+
+      // Reset board for a fresh round
+      function resetBoard() {
+        board = Array(9).fill(null);
+        gameOver = false;
+        // clear highlight
+        cells.forEach((c) => c.classList.remove("highlight"));
+        // if human is X, X goes first; else X still goes first but human may be O
+        currentTurn = "X";
+        statusEl.textContent =
+          currentTurn === human ? "Your move" : "AI is thinking...";
+        render();
+        // if AI goes first
+        if (currentTurn === ai) {
+          setTimeout(() => aiMove(), 220);
+        }
+      }
+
+      // ----- MINIMAX IMPLEMENTATION -----
+      // Minimax returns best index for player provided optimal play.
+      // Score: +10 for ai win, -10 for ai loss, 0 for draw.
+
+      function bestMove(b, player) {
+        // if only one move left, pick it
+        const free = b
+          .map((v, i) => (v === null ? i : null))
+          .filter((v) => v !== null);
+        if (free.length === 0) return null;
+        // Minimizer/Maximizer: AI wants to maximize score.
+        const maximizingPlayer = player === ai;
+
+        // Minimax recursion
+        function minimax(boardState, depth, isMaximizing) {
+          const winner = checkWinner(boardState);
+          if (winner !== null) {
+            if (winner === "Draw") return 0;
+            return winner === ai ? 10 - depth : depth - 10;
+          }
+          // collect moves
+          const moves = boardState
+            .map((v, i) => (v === null ? i : null))
+            .filter((v) => v !== null);
+          if (isMaximizing) {
+            let bestVal = -Infinity;
+            for (const m of moves) {
+              boardState[m] = ai;
+              const val = minimax(boardState, depth + 1, false);
+              boardState[m] = null;
+              bestVal = Math.max(bestVal, val);
+            }
+            return bestVal;
+          } else {
+            let bestVal = +Infinity;
+            for (const m of moves) {
+              boardState[m] = human;
+              const val = minimax(boardState, depth + 1, true);
+              boardState[m] = null;
+              bestVal = Math.min(bestVal, val);
+            }
+            return bestVal;
+          }
+        }
+
+        let bestScore = -Infinity;
+        let bestMoveIndex = null;
+        for (const m of free) {
+          b[m] = ai;
+          const score = minimax(b, 0, false);
+          b[m] = null;
+          if (score > bestScore) {
+            bestScore = score;
+            bestMoveIndex = m;
+          }
+        }
+        return bestMoveIndex;
+      }
+
+      // initialize UI defaults
+      setHuman("X"); // default human X
+      setDifficulty("hard");
+      resetBoard();
+    </script>
+  </body>
+</html>
