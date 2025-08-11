@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Stopwatch</title>
+    <style>
+      body {
+        background: #222;
+        color: #eee;
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+      }
+      .stopwatch {
+        background: #333;
+        padding: 30px 40px;
+        border-radius: 12px;
+        text-align: center;
+        box-shadow: 0 0 20px #00ff99;
+        width: 300px;
+      }
+      .time {
+        font-size: 48px;
+        font-weight: bold;
+        letter-spacing: 2px;
+        margin-bottom: 25px;
+      }
+      button {
+        background: #00ff99;
+        border: none;
+        color: #222;
+        font-size: 18px;
+        padding: 10px 20px;
+        margin: 0 10px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.3s;
+      }
+      button:hover {
+        background: #00cc77;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="stopwatch">
+      <div class="time" id="display">00:00:000</div>
+      <button id="startBtn">Start</button>
+      <button id="stopBtn" disabled>Stop</button>
+      <button id="resetBtn" disabled>Reset</button>
+    </div>
+
+    <script>
+      let startTime = 0;
+      let elapsedTime = 0;
+      let timerInterval;
+
+      const display = document.getElementById("display");
+      const startBtn = document.getElementById("startBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const resetBtn = document.getElementById("resetBtn");
+
+      function timeToString(time) {
+        let diffInHrs = time / 3600000;
+        let diffInMin = (diffInHrs - Math.floor(diffInHrs)) * 60;
+        let diffInSec = (diffInMin - Math.floor(diffInMin)) * 60;
+        let diffInMs = (diffInSec - Math.floor(diffInSec)) * 1000;
+
+        let hours = Math.floor(diffInHrs);
+        let minutes = Math.floor(diffInMin);
+        let seconds = Math.floor(diffInSec);
+        let milliseconds = Math.floor(diffInMs);
+
+        let formattedMinutes = minutes.toString().padStart(2, "0");
+        let formattedSeconds = seconds.toString().padStart(2, "0");
+        let formattedMilliseconds = milliseconds.toString().padStart(3, "0");
+
+        return `${formattedMinutes}:${formattedSeconds}:${formattedMilliseconds}`;
+      }
+
+      function start() {
+        startTime = Date.now() - elapsedTime;
+        timerInterval = setInterval(() => {
+          elapsedTime = Date.now() - startTime;
+          display.textContent = timeToString(elapsedTime);
+        }, 10);
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+        resetBtn.disabled = false;
+      }
+
+      function stop() {
+        clearInterval(timerInterval);
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+
+      function reset() {
+        clearInterval(timerInterval);
+        elapsedTime = 0;
+        display.textContent = "00:00:000";
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        resetBtn.disabled = true;
+      }
+
+      startBtn.addEventListener("click", start);
+      stopBtn.addEventListener("click", stop);
+      resetBtn.addEventListener("click", reset);
+    </script>
+  </body>
+</html>
