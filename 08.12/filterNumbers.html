@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Filter Numbers > 5</title>
+  </head>
+  <body>
+    <h2>Original Numbers</h2>
+    <p id="original"></p>
+
+    <button onclick="showGreaterThanFive()">Show Numbers > 5</button>
+
+    <h2>Filtered Numbers</h2>
+    <p id="filtered"></p>
+
+    <script>
+      const numbers = [2, 7, 4, 9, 1, 6, 8];
+
+      document.getElementById("original").textContent = numbers.join(", ");
+
+      function showGreaterThanFive() {
+        const filtered = numbers.filter((num) => num > 5);
+
+        document.getElementById("filtered").textContent = filtered.join(", ");
+      }
+    </script>
+  </body>
+</html>

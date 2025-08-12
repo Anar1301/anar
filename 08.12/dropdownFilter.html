@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Dropdown Filter</title>
+  </head>
+  <body>
+    <h2>Choose a category:</h2>
+    <select id="categoryFilter" onchange="filterItems()">
+      <option value="all">All</option>
+      <option value="fruit">Fruit</option>
+      <option value="vegetable">Vegetable</option>
+    </select>
+
+    <ul id="itemList">
+      <li data-category="fruit">Apple</li>
+      <li data-category="vegetable">Carrot</li>
+      <li data-category="fruit">Banana</li>
+      <li data-category="vegetable">Lettuce</li>
+      <li data-category="fruit">Orange</li>
+    </ul>
+
+    <script>
+      function filterItems() {
+        const filter = document.getElementById("categoryFilter").value;
+        const items = document.querySelectorAll("#itemList li");
+
+        items.forEach((item) => {
+          if (
+            filter === "all" ||
+            item.getAttribute("data-category") === filter
+          ) {
+            item.style.display = "";
+          } else {
+            item.style.display = "none";
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sort Numbers</title>
+  </head>
+  <body>
+    <h2>Original Numbers</h2>
+    <p id="original"></p>
+
+    <button onclick="sortNumbers()">Sort Numbers</button>
+
+    <h2>Sorted Numbers</h2>
+    <p id="sorted"></p>
+
+    <script>
+      const numbers = [12, 5, 8, 1, 4, 19, 7];
+
+      document.getElementById("original").textContent = numbers.join(", ");
+
+      function sortNumbers() {
+        const sortedArray = numbers.slice().sort((a, b) => a - b);
+
+        document.getElementById("sorted").textContent = sortedArray.join(", ");
+      }
+    </script>
+  </body>
+</html>

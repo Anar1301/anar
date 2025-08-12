@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Hide & Show Example</title>
+  </head>
+  <body>
+    <h1 id="text">Hello World</h1>
+    <button onclick="toggleText()">Hide / Show</button>
+
+    <script>
+      function toggleText() {
+        const element = document.getElementById("text");
+
+        if (element.style.display === "none") {
+          element.style.display = "block";
+        } else {
+          element.style.display = "none";
+        }
+      }
+    </script>
+  </body>
+</html>
